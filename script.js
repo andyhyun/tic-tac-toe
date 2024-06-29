@@ -6,36 +6,22 @@ function createGameBoard() {
 
     const getBoard = () => board;
 
-    const markSpace = (r, c, player) => {
-        board[r][c] = player.token
+    const markSpace = (row, col, player) => {
+        board[row][col] = player.token
     };
 
     const resetBoard = () => {
-        for (let r = 0; r < 3; r++) {
-            for (let c = 0; c < 3; c++) {
-                board[r][c] = 0;
+        for (let row = 0; row < 3; row++) {
+            for (let col = 0; col < 3; col++) {
+                board[row][col] = 0;
             }
         }
-    };
-
-    const printBoard = () => {
-        let printStr = "";
-
-        for (let r = 0; r < 3; r++) {
-            for (let c = 0; c < 3; c++) {
-                printStr += `${board[r][c]} `;
-            }
-            printStr += "\n";
-        }
-
-        console.log(printStr);
     };
 
     return {
         getBoard,
         markSpace,
         resetBoard,
-        printBoard,
     };
 }
 
@@ -61,8 +47,15 @@ function createGameController(
 
     let activePlayer = players[0];
 
+    const getActivePlayer = () => activePlayer;
+
     const switchTurns = () => {
         activePlayer = (activePlayer === players[0]) ? players[1] : players[0];
+    };
+
+    const resetGame = () => {
+        activePlayer = players[0];
+        gameBoard.resetBoard();
     };
 
     const hasWon = (player) => {
@@ -70,11 +63,11 @@ function createGameController(
         let streak;
 
         // Check rows
-        for (let r = 0; r < 3; r++) {
+        for (let row = 0; row < 3; row++) {
             streak = 0;
 
-            for (let c = 0; c < 3; c++) {
-                if (board[r][c] !== player.token) {
+            for (let col = 0; col < 3; col++) {
+                if (board[row][col] !== player.token) {
                     break;
                 }
                 streak++;
@@ -86,11 +79,11 @@ function createGameController(
         }
 
         // Check columns
-        for (let c = 0; c < 3; c++) {
+        for (let col = 0; col < 3; col++) {
             streak = 0;
 
-            for (let r = 0; r < 3; r++) {
-                if (board[r][c] !== player.token) {
+            for (let row = 0; row < 3; row++) {
+                if (board[row][col] !== player.token) {
                     break;
                 }
                 streak++;
@@ -135,9 +128,9 @@ function createGameController(
     const hasTied = () => {
         const board = gameBoard.getBoard();
 
-        for (let r = 0; r < 3; r++) {
-            for (let c = 0; c < 3; c++) {
-                if (board[r][c] === 0) {
+        for (let row = 0; row < 3; row++) {
+            for (let col = 0; col < 3; col++) {
+                if (board[row][col] === 0) {
                     return false;
                 }
             }
@@ -146,27 +139,83 @@ function createGameController(
         return true;
     };
 
-    const makeMove = () => {
-        const [r, c] = prompt(`${activePlayer.name}'s turn, enter row and column below separated by spaces`).split(" ");
-
-        gameBoard.markSpace(Number(r), Number(c), activePlayer);
-        gameBoard.printBoard();
+    const makeMove = (row, col) => {
+        gameBoard.markSpace(Number(row), Number(col), activePlayer);
 
         if (hasWon(activePlayer)) {
-            console.log(`${activePlayer.name} won!`);
-        } else if (hasTied()) {
-            console.log("The game ended in a tie.");
+            return;
         }
 
         switchTurns();
     };
 
     return {
+        getActivePlayer,
+        resetGame,
         hasWon,
         hasTied,
         makeMove,
+        getBoard: gameBoard.getBoard,
     };
-};
+}
 
-const game = createGameController();
+function createDisplayController() {
+    const game = createGameController();
+
+    const boardDiv = document.getElementById("board");
+    const turnDiv = document.getElementById("turn");
+    const resetButton = document.getElementById("reset");
+    const result = document.getElementById("result");
+
+    resetButton.addEventListener("click", () => {
+        game.resetGame();
+        updateScreen();
+    });
+
+    const updateScreen = () => {
+        boardDiv.textContent = "";
+
+        const activePlayer = game.getActivePlayer();
+        turnDiv.textContent = `It is ${activePlayer.name}'s turn.`;
+
+        const board = game.getBoard();
+        for (let row = 0; row < 3; row++) {
+            for (let col = 0; col < 3; col++) {
+                const cellButton = document.createElement("button");
+                cellButton.dataset.row = row;
+                cellButton.dataset.col = col;
+                cellButton.textContent = board[row][col];
+                cellButton.addEventListener("click", handleCellClick);
+
+                boardDiv.appendChild(cellButton);
+            }
+        }
+
+        if (game.hasWon(activePlayer)) {
+            result.textContent = `${activePlayer.name} won!`;
+        } else if (game.hasTied()) {
+            result.textContent = "The game ended in a tie.";
+        } else {
+            result.textContent = "";
+        }
+    };
+
+    const handleCellClick = (event) => {
+        const row = Number(event.target.dataset.row);
+        const col = Number(event.target.dataset.col);
+        const board = game.getBoard();
+
+        // Prevent player from marking taken spots
+        if (board[row][col] !== 0) {
+            return;
+        }
+
+        game.makeMove(row, col);
+        updateScreen();
+    };
+
+    updateScreen();
+}
+
+createDisplayController();
 
