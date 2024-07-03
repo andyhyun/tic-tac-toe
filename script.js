@@ -159,6 +159,7 @@ function createGameController(
     };
 }
 
+// Updates the user interface
 function createDisplayController() {
     const game = createGameController();
 
@@ -185,7 +186,6 @@ function createDisplayController() {
                 cellButton.dataset.row = row;
                 cellButton.dataset.col = col;
                 cellButton.textContent = board[row][col];
-                cellButton.addEventListener("click", handleCellClick);
 
                 boardDiv.appendChild(cellButton);
             }
@@ -200,7 +200,12 @@ function createDisplayController() {
         }
     };
 
-    const handleCellClick = (event) => {
+    const handleBoardClick = (event) => {
+        // Make sure a cell was clicked
+        if (!event.target.dataset.row || !event.target.dataset.col) {
+            return;
+        }
+
         const row = Number(event.target.dataset.row);
         const col = Number(event.target.dataset.col);
         const board = game.getBoard();
@@ -213,6 +218,8 @@ function createDisplayController() {
         game.makeMove(row, col);
         updateScreen();
     };
+
+    boardDiv.addEventListener("click", handleBoardClick);
 
     updateScreen();
 }
