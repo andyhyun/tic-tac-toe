@@ -160,18 +160,29 @@ function createGameController(
 }
 
 // Updates the user interface
-function createDisplayController() {
-    const game = createGameController();
+function createDisplayController(playerOneName, playerTwoName) {
+    document.body.textContent = "";
 
-    const boardDiv = document.getElementById("board");
-    const turnDiv = document.getElementById("turn");
-    const resetButton = document.getElementById("reset");
-    const result = document.getElementById("result");
+    const game = createGameController(playerOneName, playerTwoName);
 
-    resetButton.addEventListener("click", () => {
-        game.resetGame();
-        updateScreen();
-    });
+    const boardDiv = document.createElement("div");
+    boardDiv.id = "board";
+
+    const turnDiv = document.createElement("div");
+    turnDiv.id = "turn";
+
+    const resetButton = document.createElement("button");
+    resetButton.type = "button";
+    resetButton.id = "reset";
+    resetButton.textContent = "Reset";
+
+    const result = document.createElement("p");
+    result.id = "result";
+
+    document.body.appendChild(boardDiv);
+    document.body.appendChild(turnDiv);
+    document.body.appendChild(resetButton);
+    document.body.appendChild(result);
 
     const updateScreen = () => {
         boardDiv.textContent = "";
@@ -219,10 +230,28 @@ function createDisplayController() {
         updateScreen();
     };
 
+    resetButton.addEventListener("click", () => {
+        game.resetGame();
+        updateScreen();
+    });
+
     boardDiv.addEventListener("click", handleBoardClick);
 
     updateScreen();
 }
 
-createDisplayController();
+const form = document.querySelector("form");
+const playButton = document.getElementById("play");
+
+playButton.addEventListener("click", (event) => {
+    for (const element of form) {
+        if (!element.validity.valid) {
+            return;
+        }
+    }
+
+    event.preventDefault();
+
+    createDisplayController(form[0].value, form[1].value);
+});
 
