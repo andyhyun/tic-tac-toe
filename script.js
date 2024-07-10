@@ -2,7 +2,7 @@
 
 // This represents the state of the board
 function createGameBoard() {
-    const board = new Array(3).fill(0).map(() => new Array(3).fill(0));
+    const board = new Array(3).fill(0).map(() => new Array(3).fill(""));
 
     const getBoard = () => board;
 
@@ -13,7 +13,7 @@ function createGameBoard() {
     const resetBoard = () => {
         for (let row = 0; row < 3; row++) {
             for (let col = 0; col < 3; col++) {
-                board[row][col] = 0;
+                board[row][col] = "";
             }
         }
     };
@@ -37,11 +37,11 @@ function createGameController(
     const players = [
         {
             name: playerOneName,
-            token: 1,
+            token: "X",
         },
         {
             name: playerTwoName,
-            token: 2,
+            token: "O",
         },
     ];
 
@@ -130,7 +130,7 @@ function createGameController(
 
         for (let row = 0; row < 3; row++) {
             for (let col = 0; col < 3; col++) {
-                if (board[row][col] === 0) {
+                if (board[row][col] === "") {
                     return false;
                 }
             }
@@ -165,6 +165,9 @@ function createDisplayController(playerOneName, playerTwoName) {
 
     const game = createGameController(playerOneName, playerTwoName);
 
+    const containerDiv = document.createElement("div");
+    containerDiv.id = "container";
+
     const boardDiv = document.createElement("div");
     boardDiv.id = "board";
 
@@ -176,13 +179,11 @@ function createDisplayController(playerOneName, playerTwoName) {
     resetButton.id = "reset";
     resetButton.textContent = "Reset";
 
-    const result = document.createElement("p");
-    result.id = "result";
+    containerDiv.appendChild(boardDiv);
+    containerDiv.appendChild(turnDiv);
+    containerDiv.appendChild(resetButton);
 
-    document.body.appendChild(boardDiv);
-    document.body.appendChild(turnDiv);
-    document.body.appendChild(resetButton);
-    document.body.appendChild(result);
+    document.body.appendChild(containerDiv);
 
     const updateScreen = () => {
         boardDiv.textContent = "";
@@ -203,11 +204,9 @@ function createDisplayController(playerOneName, playerTwoName) {
         }
 
         if (game.hasWon(activePlayer)) {
-            result.textContent = `${activePlayer.name} won!`;
+            turnDiv.textContent = `${activePlayer.name} won!`;
         } else if (game.hasTied()) {
-            result.textContent = "The game ended in a tie.";
-        } else {
-            result.textContent = "";
+            turnDiv.textContent = "The game ended in a tie.";
         }
     };
 
@@ -222,7 +221,7 @@ function createDisplayController(playerOneName, playerTwoName) {
         const board = game.getBoard();
 
         // Prevent player from marking taken spots
-        if (board[row][col] !== 0) {
+        if (board[row][col] !== "") {
             return;
         }
 
