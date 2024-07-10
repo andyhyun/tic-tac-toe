@@ -32,7 +32,7 @@ function createGameController(
 ) {
     const gameBoard = createGameBoard();
 
-    // Player token must be non-zero, as zero represents
+    // Player token can't be an empty string, as it represents
     // an empty space on the board
     const players = [
         {
